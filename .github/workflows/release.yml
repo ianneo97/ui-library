@@ -34,3 +34,8 @@ jobs:
               with:
                   commit_message: Applying build changes
 
+            - name: Deploy changes to npm
+              run: npm publish
+              env:
+                NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
