@@ -1,0 +1,29 @@
+.custom-modal .ant-modal-content {
+    padding: 0px 0px;
+}
+
+.custom-modal .ant-modal-close-x {
+    color: #000;
+    text-align: right;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 900;
+    line-height: normal;
+}
+
+.custom-modal .ant-modal-header {
+    padding: 15px;
+    border-bottom: 1px #f2f2f2 solid;
+}
+
+.custom-modal .ant-modal-body {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-bottom: 15px;
+}
+
+.custom-modal .ant-modal-footer {
+    padding-bottom: 12px;
+    padding-left: 15px;
+    padding-right: 15px;
+}

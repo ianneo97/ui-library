@@ -1,0 +1,17 @@
+.custom-steps .ant-steps-item-icon {
+    background-color: #972d47 !important;
+    border-color: #972d47 !important;
+}
+
+.custom-steps .ant-steps-icon {
+    color: #ffffff !important;
+}
+
+.custom-steps .ant-steps-item-wait .ant-steps-item-icon {
+    background-color: #939393 !important;
+    border-color: #939393 !important;
+}
+
+.custom-steps .ant-steps-item-wait .ant-steps-icon {
+    color: #ffffff !important;
+}
