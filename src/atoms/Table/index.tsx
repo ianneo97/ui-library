@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Table as AntdTable, Checkbox, TableProps } from "antd";
 import { ColumnType } from "antd/es/table";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "../Button";
 import {
     CheckboxChangeEvent,
@@ -34,6 +34,7 @@ import { Text } from "../Typography";
 import { COLOURS } from "../constant";
 import "./index.css";
 import { Dragger, UploadFile } from "../Upload";
+import { Drawer } from "../Drawer";
 
 export interface ITableProps<T> extends TableProps<T> {
     showFilter?: boolean;
@@ -45,10 +46,12 @@ export interface ITableProps<T> extends TableProps<T> {
 export interface IAddTableProps<T> extends Omit<TableProps<T>, "columns"> {
     form: FormInstance;
     contentName?: string;
+    defaultAdd?: any;
     columns: IAddTableColumns<T>[];
     innerFormProps?: IFormProps;
     errorText?: string;
     addEnabled?: boolean;
+    deleteEnabled?: boolean;
 }
 
 export interface IAddTableColumns<T> extends ColumnType<T> {
@@ -77,6 +80,7 @@ export const Table: React.FC<ITableProps<any>> = ({
     showFilter = true,
     showSearch = true,
     showColumns = true,
+    size = "small",
     ...rest
 }) => {
     const [form] = useForm();
@@ -104,9 +108,28 @@ export const Table: React.FC<ITableProps<any>> = ({
     );
     const [filteredData, setFilteredData] = useState<any>(dataSource);
 
+    function stripNullValues(obj: any): any {
+        if (typeof obj !== "object" || obj === null) {
+            return obj;
+        }
+
+        if (Array.isArray(obj)) {
+            return obj.map(stripNullValues);
+        }
+
+        return Object.keys(obj).reduce((acc, key) => {
+            const value = stripNullValues(obj[key]);
+            if (value !== null) {
+                // @ts-ignore
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+    }
+
     const handleSearch = () => {
         const content = dataSource?.filter((item) =>
-            Object.values(item).some((value) =>
+            Object.values(stripNullValues(item)).some((value) =>
                 JSON.stringify(value || "")
                     .toLocaleLowerCase()
                     .includes(searchValue.toLocaleLowerCase())
@@ -148,6 +171,7 @@ export const Table: React.FC<ITableProps<any>> = ({
                     flexDirection: "column",
                     padding: "5px 5px",
                     gap: "2px",
+                    zIndex: 200,
                 }}
             >
                 <Checkbox
@@ -197,6 +221,7 @@ export const Table: React.FC<ITableProps<any>> = ({
                         rules={defaultRules}
                     >
                         <Select
+                            getPopupContainer={undefined}
                             options={(columns || []).map((x) => ({
                                 label: x.title?.toString() || "",
                                 value: x.key?.toString() || "",
@@ -211,6 +236,7 @@ export const Table: React.FC<ITableProps<any>> = ({
                         rules={defaultRules}
                     >
                         <Select
+                            getPopupContainer={undefined}
                             options={[{ label: "Contains", value: "contains" }]}
                         />
                     </FormItem>
@@ -256,6 +282,12 @@ export const Table: React.FC<ITableProps<any>> = ({
         setIndeterminate(false);
         setCheckAll(e.target.checked);
     };
+
+    useEffect(() => {
+        if (dataSource) {
+            setFilteredData(dataSource);
+        }
+    }, [dataSource]);
 
     return (
         <>
@@ -318,7 +350,8 @@ export const Table: React.FC<ITableProps<any>> = ({
                                     dropdownRender={() =>
                                         renderCheckboxContent()
                                     }
-                                    dropdownStyle={{ width: "100%" }}
+                                    popupClassName="table-dropdown-popup"
+                                    getPopupContainer={undefined}
                                 />
                             </FormItem>
                         </Form>
@@ -328,7 +361,9 @@ export const Table: React.FC<ITableProps<any>> = ({
                         <Popover
                             className="custom-table-filter"
                             content={renderPopoverContent}
-                            placement="topLeft"
+                            placement="bottomLeft"
+                            arrow={false}
+                            trigger={["click"]}
                         >
                             <FilterOutlined />
                             <Text color={COLOURS.BRAND.Secondary}>Filters</Text>
@@ -344,6 +379,7 @@ export const Table: React.FC<ITableProps<any>> = ({
                 dataSource={filteredCols.length > 1 ? filteredData : []}
                 columns={filteredCols}
                 className="custom-table"
+                size={size}
             >
                 {children}
             </AntdTable>
@@ -359,25 +395,25 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
     rowKey = "name",
     contentName = "Item",
     innerFormProps = {
-        labelCol: { span: 4, offset: 2 },
-        wrapperCol: { span: 16 },
-        labelAlign: "right",
+        labelAlign: "left",
     },
+    defaultAdd,
     errorText = "Please resolve invalid form fields",
     addEnabled = true,
+    deleteEnabled = true,
+    size = "small",
     ...rest
 }) => {
-    const [open, setOpen] = useState(false);
     const [errors, setErrors] = useState<
         {
             name: InternalNamePath;
             errors: string[];
         }[]
     >([]);
-    const [addForm] = useForm();
-    const memoizedColumns = useMemo(
-        () =>
-            (columns || []).map((x) => {
+
+    const memoizedColumns = useCallback(
+        (remove: any) => {
+            const col = (columns || []).map((x) => {
                 return {
                     ...x,
                     render: (_: unknown, item: any, index: number) => {
@@ -441,34 +477,37 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
                         );
                     },
                 };
-            }),
-        [columns, errors, form]
-    );
-
-    const toggleAdd = () => {
-        setOpen(!open);
-        resetAddForm();
-    };
-
-    const onAdd = async () => {
-        try {
-            await addForm.validateFields();
-            const values = addForm.getFieldsValue(true);
-
-            form.setFieldsValue({
-                items: [...(form.getFieldValue("items") || []), values],
             });
 
-            setOpen(false);
-            addForm.resetFields();
-        } catch (err) {
-            return;
-        }
-    };
+            if (deleteEnabled) {
+                col.push({
+                    title: "Actions",
+                    dataIndex: "action",
+                    fixed: "right",
+                    width: 10,
+                    render: (_: unknown, item: any, index: number) => {
+                        return (
+                            <Space>
+                                <Button
+                                    btntype="Delete"
+                                    onClick={() => remove(index)}
+                                >
+                                    <DeleteOutlined
+                                        style={{
+                                            color: COLOURS.BRAND.Secondary,
+                                        }}
+                                    />
+                                </Button>
+                            </Space>
+                        );
+                    },
+                });
+            }
 
-    const resetAddForm = () => {
-        addForm.resetFields();
-    };
+            return col;
+        },
+        [columns, errors, form]
+    );
 
     useEffect(() => {
         if (dataSource && form) {
@@ -483,17 +522,21 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
                 onFinishFailed={(err) => {
                     setErrors(err.errorFields);
                 }}
-                onValuesChange={async (a, b) => {
+                wrapperCol={{ span: 24 }}
+                labelCol={{ span: 0 }}
+                onValuesChange={async () => {
                     await form.submit();
+                }}
+                onFinish={() => {
+                    setErrors([]);
                 }}
             >
                 <FormList name="items">
-                    {(fields, _, meta) => {
+                    {(fields, { add, remove }, meta) => {
                         return (
                             <AntdTable
-                                {...rest}
                                 dataSource={fields}
-                                columns={memoizedColumns}
+                                columns={memoizedColumns(remove)}
                                 rowKey={rowKey}
                                 pagination={false}
                                 className={`custom-table ${
@@ -503,7 +546,9 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
                                     <Text
                                         as="ref"
                                         color={COLOURS.BRAND.Secondary}
-                                        onClick={toggleAdd}
+                                        onClick={() =>
+                                            defaultAdd ? add(defaultAdd) : add()
+                                        }
                                         hidden={!addEnabled}
                                     >
                                         <Space>
@@ -512,6 +557,8 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
                                         </Space>
                                     </Text>
                                 )}
+                                size={size}
+                                {...rest}
                             >
                                 {children}
                             </AntdTable>
@@ -535,38 +582,6 @@ export const AddTable: React.FC<IAddTableProps<any>> = ({
                     </Space>
                 </Text>
             </div>
-
-            <Modal
-                open={open}
-                title={`Add ${contentName}`}
-                cancelFn={toggleAdd}
-                okFn={onAdd}
-            >
-                <Form form={addForm} {...innerFormProps}>
-                    {memoizedColumns.map(
-                        (
-                            { title, dataIndex, required, rules, component },
-                            index
-                        ) => {
-                            return (
-                                <FormItem
-                                    key={index}
-                                    label={title?.toString()}
-                                    name={
-                                        dataIndex instanceof Array
-                                            ? (dataIndex as [number | string])
-                                            : dataIndex?.toString() || ""
-                                    }
-                                    required={required}
-                                    rules={rules}
-                                >
-                                    {component}
-                                </FormItem>
-                            );
-                        }
-                    )}
-                </Form>
-            </Modal>
         </div>
     );
 };
@@ -579,6 +594,7 @@ export const UploadTable: React.FC<IUploadTableProps<any>> = ({
     rowKey = "id",
     columns,
     accept = "*",
+    size = "small",
     ...rest
 }) => {
     const [errors, setErrors] = useState<
@@ -588,97 +604,110 @@ export const UploadTable: React.FC<IUploadTableProps<any>> = ({
         }[]
     >([]);
 
-    const memoizedColumns = useMemo(() => {
-        const cols = (columns || []).map((x) => ({
-            ...x,
-            width: x.width || 200,
-            render: (_: unknown, item: any, index: number) => {
-                const dataIndex =
-                    x.dataIndex instanceof Array
-                        ? [...x.dataIndex]
-                        : x.dataIndex;
+    const memoizedColumns = useCallback(
+        (remove: any) => {
+            const cols = (columns || []).map((x) => ({
+                ...x,
+                width: x.width || 200,
+                render: (_: unknown, item: any, index: number) => {
+                    const dataIndex =
+                        x.dataIndex instanceof Array
+                            ? [...x.dataIndex]
+                            : x.dataIndex;
 
-                const parsedName: [number | string] = [index];
+                    const parsedName: [number | string] = [index];
 
-                if (
-                    x.hidden &&
-                    x.hidden(form.getFieldValue(["items", ...parsedName]))
-                )
-                    return null;
+                    if (
+                        x.hidden &&
+                        x.hidden(form.getFieldValue(["items", ...parsedName]))
+                    )
+                        return null;
 
-                if (dataIndex instanceof Array) {
-                    parsedName.push(...dataIndex);
-                } else {
-                    parsedName.push(dataIndex?.toString() || "");
-                }
-                const error = errors.find(
-                    (y) =>
-                        JSON.stringify(y.name) ===
-                        JSON.stringify(["items", ...parsedName])
-                );
+                    if (dataIndex instanceof Array) {
+                        parsedName.push(...dataIndex);
+                    } else {
+                        parsedName.push(dataIndex?.toString() || "");
+                    }
+                    const error = errors.find(
+                        (y) =>
+                            JSON.stringify(y.name) ===
+                            JSON.stringify(["items", ...parsedName])
+                    );
 
-                return (
-                    <Tooltip
-                        title={
-                            error?.errors?.map((x, index) => (
-                                <Text color={COLOURS.TEXT.White} key={index}>
-                                    {x}
-                                </Text>
-                            )) || ""
-                        }
-                        key={index}
-                        color={COLOURS.STATUS.Error}
-                    >
-                        <FormItem
-                            name={parsedName}
-                            required={x.required}
-                            rules={x.rules}
-                            help={false}
-                            valuePropName={x.valuePropName || "value"}
+                    return (
+                        <Tooltip
+                            title={
+                                error?.errors?.map((x, index) => (
+                                    <Text
+                                        color={COLOURS.TEXT.White}
+                                        key={index}
+                                    >
+                                        {x}
+                                    </Text>
+                                )) || ""
+                            }
+                            key={index}
+                            color={COLOURS.STATUS.Error}
+                            arrow={false}
                         >
-                            {x.component
-                                ? x.component
-                                : form.getFieldValue(["items", ...parsedName])}
-                        </FormItem>
-                    </Tooltip>
-                );
-            },
-        }));
+                            <FormItem
+                                name={parsedName}
+                                required={x.required}
+                                rules={x.rules}
+                                help={false}
+                                valuePropName={x.valuePropName || "value"}
+                            >
+                                {x.component
+                                    ? x.component
+                                    : form.getFieldValue([
+                                          "items",
+                                          ...parsedName,
+                                      ])}
+                            </FormItem>
+                        </Tooltip>
+                    );
+                },
+            }));
 
-        cols.push({
-            title: "Actions",
-            dataIndex: "action",
-            key: "action",
-            fixed: "right",
-            width: 20,
-            render: (_: unknown, item: unknown, index: number) => {
-                return (
-                    <Button
-                        btntype="Delete"
-                        onClick={() => {
-                            if (!setFiles) return;
-                            if (!files) return;
+            cols.push({
+                title: "Actions",
+                dataIndex: "action",
+                key: "action",
+                fixed: "right",
+                width: 20,
+                render: (_: unknown, item: unknown, index: number) => {
+                    return (
+                        <Button
+                            btntype="Delete"
+                            onClick={() => {
+                                if (!setFiles) return;
+                                if (!files) return;
 
-                            const fields = form.getFieldsValue(true);
-                            fields.items = fields.items ? fields.items : [];
+                                const fields = form.getFieldsValue(true);
+                                fields.items = fields.items ? fields.items : [];
 
-                            // Find the object in the array and remove from state.
-                            const item = fields.items[index];
-                            setFiles(files.filter((x) => x.uid !== item.id));
+                                // Find the object in the array and remove from state.
+                                const item = fields.items[index];
+                                setFiles(
+                                    files.filter((x) => x.uid !== item.id)
+                                );
 
-                            // Removing the object from the form
-                            fields.items.splice(index, 1);
-                            form.setFieldsValue(fields);
-                        }}
-                    >
-                        <DeleteOutlined style={{ color: COLOURS.TEXT.Red }} />
-                    </Button>
-                );
-            },
-        });
+                                // Removing the object from the form
+                                remove(index);
+                            }}
+                        >
+                            <DeleteOutlined
+                                style={{ color: COLOURS.TEXT.Red }}
+                            />
+                        </Button>
+                    );
+                },
+            });
 
-        return cols;
-    }, [columns, errors, files, setFiles, form]);
+            return cols;
+        },
+        [columns, errors, files, setFiles, form]
+    );
 
     return (
         <>
@@ -706,18 +735,19 @@ export const UploadTable: React.FC<IUploadTableProps<any>> = ({
                     wrapperCol={{ span: 24 }}
                 >
                     <FormList name="items">
-                        {(fields, _, meta) => {
+                        {(fields, { remove }, meta) => {
                             return (
                                 <AntdTable
-                                    {...rest}
                                     dataSource={fields}
-                                    columns={memoizedColumns}
+                                    columns={memoizedColumns(remove)}
                                     rowKey={rowKey}
                                     pagination={false}
                                     className={`custom-table ${
                                         rest.className || ""
                                     }`}
                                     scroll={{ x: "max-content" }}
+                                    size={size}
+                                    {...rest}
                                 >
                                     {children}
                                 </AntdTable>

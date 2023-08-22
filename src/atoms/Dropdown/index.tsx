@@ -17,6 +17,7 @@ export type {
 export interface IDropdownProps extends DropdownProps {}
 export interface IMenuItemType extends Omit<MenuItemType, "onClick"> {
     onClick?: () => any | Promise<any>;
+    disabled?: boolean;
 }
 export interface ICollapsibleDropdownProps extends IDropdownProps {
     hoverLabel?: string;
@@ -71,7 +72,11 @@ export const CollapsibleDropdown: React.FC<ICollapsibleDropdownProps> = ({
 
                         return (
                             <div key={`btn-${index}`}>
-                                <Button onClick={value.onClick}>
+                                <Button
+                                    icon={value.icon}
+                                    onClick={value.onClick}
+                                    disabled={value.disabled}
+                                >
                                     {value.label}
                                 </Button>
                             </div>

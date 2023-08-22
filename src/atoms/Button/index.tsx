@@ -5,7 +5,7 @@ import { ITooltipProps, Tooltip } from "../Tooltip";
 import { Text } from "../Typography";
 import { COLOURS } from "../constant";
 
-export interface IButtonProps extends Omit<ButtonProps, "type" | "onClick"> {
+export interface IButtonProps extends Omit<ButtonProps, "onClick"> {
     onClick?: () => any | Promise<any>;
     btntype?: "Submit" | "Close" | "Delete" | "Edit" | "Default";
 }
@@ -21,7 +21,8 @@ export interface IButtonWithTooltipProps
 
 export const ButtonTypes = (
     hovering: boolean,
-    hidden?: boolean
+    hidden?: boolean,
+    disabled?: boolean
 ): Record<string, React.CSSProperties> => ({
     Submit: {
         background: COLOURS.BRAND.PrimaryDark,
@@ -33,6 +34,7 @@ export const ButtonTypes = (
         display: hidden ? "none" : "flex",
         justifyContent: "center",
         alignItems: "center",
+        opacity: disabled ? 0.7 : 1,
     },
     Close: {
         background: COLOURS.TEXT.White,
@@ -44,6 +46,7 @@ export const ButtonTypes = (
         display: hidden ? "none" : "flex",
         justifyContent: "center",
         alignItems: "center",
+        opacity: disabled ? 0.7 : 1,
     },
     Edit: {
         background: COLOURS.TEXT.Blue,
@@ -55,6 +58,7 @@ export const ButtonTypes = (
         display: hidden ? "none" : "flex",
         justifyContent: "center",
         alignItems: "center",
+        opacity: disabled ? 0.7 : 1,
     },
     Delete: {
         background: COLOURS.TEXT.White,
@@ -66,6 +70,7 @@ export const ButtonTypes = (
         display: hidden ? "none" : "flex",
         justifyContent: "center",
         alignItems: "center",
+        opacity: disabled ? 0.7 : 1,
     },
     Default: {
         background: COLOURS.BRAND.Secondary,
@@ -77,12 +82,14 @@ export const ButtonTypes = (
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        opacity: disabled ? 0.7 : 1,
     },
 });
 
 export const Button: React.FC<IButtonProps> = ({
     children,
     hidden,
+    disabled,
     onClick,
     ...rest
 }) => {
@@ -106,12 +113,17 @@ export const Button: React.FC<IButtonProps> = ({
 
     return (
         <AntdButton
-            {...rest}
             onClick={handleClick}
             onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
-            style={ButtonTypes(isHover, hidden)[rest.btntype || "Default"]}
+            style={
+                ButtonTypes(isHover, hidden, disabled)[
+                    rest.btntype || "Default"
+                ]
+            }
             loading={isLoading}
+            disabled={disabled}
+            {...rest}
         >
             <Text
                 color={

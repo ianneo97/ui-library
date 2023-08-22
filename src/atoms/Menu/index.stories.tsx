@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { IMenuProps, Menu } from ".";
+import { IMenuProps, ItemGroup, Menu, MenuItem, SubMenu } from ".";
+import { LogoutOutlined, SettingOutlined } from "@ant-design/icons";
 
 export default {
     title: "Atoms/Menu",
@@ -25,6 +26,38 @@ export const Default = () => {
                 onClick={handleClick}
                 mode="horizontal"
             ></Menu>
+
+            <div style={{ width: "400px", height: "600px" }}>
+                <Menu
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        position: "relative",
+                        height: "100%",
+                    }}
+                >
+                    <MenuItem>Dashboard</MenuItem>
+                    <SubMenu title="Products">
+                        <MenuItem>Categories</MenuItem>
+                        <MenuItem>Listing</MenuItem>
+                    </SubMenu>
+                    <ItemGroup
+                        title="Settings"
+                        style={{
+                            position: "absolute",
+                            bottom: 0,
+                            width: "100%",
+                        }}
+                    >
+                        <MenuItem>
+                            <SettingOutlined /> Workspace Settings
+                        </MenuItem>
+                        <MenuItem>
+                            <LogoutOutlined /> Sign Out
+                        </MenuItem>
+                    </ItemGroup>
+                </Menu>
+            </div>
         </>
     );
 };

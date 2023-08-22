@@ -13,7 +13,6 @@ export const Select: React.FC<ISelectProps> = ({
 }) => {
     return (
         <AntdSelect
-            {...rest}
             className={`custom-select ${className || ""}`}
             allowClear
             showSearch
@@ -25,6 +24,8 @@ export const Select: React.FC<ISelectProps> = ({
                         .includes(input.toLocaleLowerCase()) || false
                 );
             }}
+            getPopupContainer={(trigger) => trigger.parentElement}
+            {...rest}
         >
             {children}
         </AntdSelect>

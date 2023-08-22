@@ -22,11 +22,7 @@
 }
 
 .custom-radio-group .ant-radio-button-wrapper span {
-    font-weight: 500;
     color: #000000;
-    font-family: "Open Sans";
-    font-size: 16px;
-    line-height: normal;
 }
 
 .custom-radio-group .ant-radio-button-wrapper-checked span {

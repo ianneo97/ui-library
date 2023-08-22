@@ -1,5 +1,5 @@
 import { Modal as AntdModal, ModalProps } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { FormInstance } from "../Form/index";
 import { Space } from "../Space";
@@ -14,7 +14,7 @@ export interface IModalProps extends Omit<ModalProps, "onOk" | "onCancel"> {
 }
 
 export interface StepModalItemProps {
-    title: string;
+    title: string | React.ReactNode;
     description?: string;
     content: React.ReactNode;
 }
@@ -36,7 +36,6 @@ export const Modal: React.FC<IModalProps> = ({
 }) => {
     return (
         <AntdModal
-            {...rest}
             onCancel={cancelFn}
             className={`custom-modal ${rest.className || ""}`}
             footer={
@@ -56,6 +55,7 @@ export const Modal: React.FC<IModalProps> = ({
                     </Space>
                 </>
             }
+            {...rest}
         >
             {children}
         </AntdModal>
@@ -72,6 +72,7 @@ export const StepModal: React.FC<IStepModalProps> = ({
     form,
     subtitle,
     stepContent = [],
+    open,
     ...rest
 }) => {
     const [current, setCurrent] = useState(0);
@@ -88,9 +89,15 @@ export const StepModal: React.FC<IStepModalProps> = ({
         setCurrent((prev) => prev - 1);
     };
 
+    useEffect(() => {
+        if (open) {
+            setCurrent(0);
+        }
+    }, [open]);
+
     return (
         <AntdModal
-            {...rest}
+            open={open}
             onCancel={cancelFn}
             className={`custom-modal ${rest.className || ""}`}
             footer={
@@ -129,8 +136,9 @@ export const StepModal: React.FC<IStepModalProps> = ({
                     </div>
                 </>
             }
+            {...rest}
         >
-            <Space direction="vertical" size="large">
+            <div>
                 {subtitle && <Subtitle>{subtitle}</Subtitle>}
 
                 <div style={{ display: "flex" }}>
@@ -141,6 +149,8 @@ export const StepModal: React.FC<IStepModalProps> = ({
                             paddingLeft: "18px",
                             paddingTop: "24px",
                             borderRadius: "8px 0px 0px 8px",
+                            maxWidth: "30%",
+                            minWidth: "25%",
                         }}
                         size="small"
                         direction="vertical"
@@ -153,7 +163,7 @@ export const StepModal: React.FC<IStepModalProps> = ({
 
                     <div
                         style={{
-                            flex: 2.5,
+                            flex: 3,
                             paddingLeft: "12px",
                             paddingTop: "18px",
                             border: "1px solid #F2F2F2",
@@ -161,9 +171,12 @@ export const StepModal: React.FC<IStepModalProps> = ({
                         }}
                     >
                         {stepContent[current]?.content}
+                        {/* {stepContent.map((x, i) => {
+                            return stepContent[current]?.content;
+                        })} */}
                     </div>
                 </div>
-            </Space>
+            </div>
         </AntdModal>
     );
 };

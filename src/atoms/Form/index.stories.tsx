@@ -23,7 +23,7 @@ export const Default = () => {
                 <Form
                     form={form}
                     labelCol={{ span: 8 }}
-                    labelAlign="left"
+                    labelAlign="right"
                     labelWrap
                     wrapperCol={{ span: 16 }}
                     colon={false}

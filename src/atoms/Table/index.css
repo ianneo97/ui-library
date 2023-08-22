@@ -56,3 +56,7 @@
 .custom-table .ant-table-thead .ant-table-cell:last-child {
     border-start-end-radius: 0px !important;
 }
+
+.table-dropdown-popup {
+    min-width: max-content !important;
+}

@@ -20,6 +20,7 @@
     padding-left: 15px;
     padding-right: 15px;
     margin-bottom: 15px;
+    overflow: auto;
 }
 
 .custom-modal .ant-modal-footer {

@@ -10,3 +10,11 @@ export const Menu: React.FC<IMenuProps> = ({ children, ...rest }) => {
 export const MenuItem: React.FC<IMenuItemProps> = ({ children, ...rest }) => {
     return <AntdMenu.Item {...rest}>{children}</AntdMenu.Item>;
 };
+
+export const SubMenu: React.FC<IMenuItemProps> = ({ children, ...rest }) => {
+    return <AntdMenu.SubMenu {...rest}>{children}</AntdMenu.SubMenu>;
+};
+
+export const ItemGroup: React.FC<IMenuItemProps> = ({ children, ...rest }) => {
+    return <AntdMenu.ItemGroup {...rest}>{children}</AntdMenu.ItemGroup>;
+};

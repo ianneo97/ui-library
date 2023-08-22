@@ -18,7 +18,7 @@ const textStyle = (
     color: string = COLOURS.TEXT.Primary,
     strong: boolean = false,
     as?: "text" | "ref",
-    fontSize: string = "16px"
+    fontSize: string = "14px"
 ): CSSProperties => ({
     color: color,
     fontSize: fontSize,
@@ -28,12 +28,11 @@ const textStyle = (
     alignSelf: "center",
     wordBreak: "keep-all",
     cursor: as === "ref" ? "pointer" : "auto",
-    WebkitAlignSelf: "baseline",
 });
 
 const linkStyle = (strong: boolean = false): CSSProperties => ({
     color: COLOURS.TEXT.Blue,
-    fontSize: "16px",
+    fontSize: "14px",
     fontStyle: "normal",
     fontWeight: strong ? 600 : 400,
     lineHeight: "normal",
@@ -55,8 +54,12 @@ export interface ITextProps extends TextProps {
     fontSize?: string;
 }
 
-export const TextBase: React.FC<TextProps> = ({ children, ...rest }) => {
-    return <AntdTypograhy.Text {...rest}>{children}</AntdTypograhy.Text>;
+export const TextBase: React.FC<TextProps> = ({ children, style, ...rest }) => {
+    return (
+        <AntdTypograhy.Text style={style} {...rest}>
+            {children}
+        </AntdTypograhy.Text>
+    );
 };
 
 export const TitleBase: React.FC<TitleProps> = ({ children, ...rest }) => {
@@ -73,9 +76,9 @@ export const LinkBase: React.FC<LinkProps> = ({ children, ...rest }) => {
     return <AntdTypograhy.Link {...rest}>{children}</AntdTypograhy.Link>;
 };
 
-export const Subtitle: React.FC<TextProps> = ({ children, ...rest }) => {
+export const Subtitle: React.FC<TextProps> = ({ children, style, ...rest }) => {
     return (
-        <TextBase {...rest} style={subtitleStyle}>
+        <TextBase {...rest} style={{ ...subtitleStyle, ...style }}>
             {children}
         </TextBase>
     );
@@ -86,10 +89,14 @@ export const Text: React.FC<ITextProps> = ({
     color,
     as = "text",
     fontSize,
+    style,
     ...rest
 }) => {
     return (
-        <TextBase {...rest} style={textStyle(color, false, as, fontSize)}>
+        <TextBase
+            {...rest}
+            style={{ ...textStyle(color, false, as, fontSize), ...style }}
+        >
             {children}
         </TextBase>
     );
@@ -100,42 +107,54 @@ export const TextStrong: React.FC<ITextProps> = ({
     color,
     as = "text",
     fontSize,
+    style,
     ...rest
 }) => {
     return (
-        <TextBase {...rest} style={textStyle(color, true, as, fontSize)}>
+        <TextBase
+            {...rest}
+            style={{ ...textStyle(color, true, as, fontSize), ...style }}
+        >
             {children}
         </TextBase>
     );
 };
 
-export const Title: React.FC<TextProps> = ({ children, ...rest }) => {
+export const Title: React.FC<TextProps> = ({ children, style, ...rest }) => {
     return (
-        <TextBase {...rest} style={titleStyle(true)}>
+        <TextBase {...rest} style={{ ...titleStyle(true), ...style }}>
             {children}
         </TextBase>
     );
 };
 
-export const SubheaderTitle: React.FC<TextProps> = ({ children, ...rest }) => {
+export const SubheaderTitle: React.FC<TextProps> = ({
+    children,
+    style,
+    ...rest
+}) => {
     return (
-        <TextBase {...rest} style={titleStyle(false)}>
+        <TextBase {...rest} style={{ ...titleStyle(false), ...style }}>
             {children}
         </TextBase>
     );
 };
 
-export const Link: React.FC<LinkProps> = ({ children, ...rest }) => {
+export const Link: React.FC<LinkProps> = ({ children, style, ...rest }) => {
     return (
-        <LinkBase {...rest} style={linkStyle(false)}>
+        <LinkBase {...rest} style={{ ...linkStyle(false), ...style }}>
             {children}
         </LinkBase>
     );
 };
 
-export const LinkStrong: React.FC<LinkProps> = ({ children, ...rest }) => {
+export const LinkStrong: React.FC<LinkProps> = ({
+    children,
+    style,
+    ...rest
+}) => {
     return (
-        <LinkBase {...rest} style={linkStyle(true)}>
+        <LinkBase {...rest} style={{ ...linkStyle(true), ...style }}>
             {children}
         </LinkBase>
     );
