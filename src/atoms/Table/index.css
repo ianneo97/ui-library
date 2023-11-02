@@ -60,3 +60,19 @@
 .table-dropdown-popup {
     min-width: max-content !important;
 }
+
+.custom-v2-table .ant-table-thead .ant-table-cell {
+    background-color: #e5e5e5;
+}
+
+.custom-v2-table .ant-table-thead .ant-table-cell::before {
+    display: none;
+}
+
+.custom-v2-table .ant-table-thead .ant-table-cell:first-child {
+    border-start-start-radius: 0px !important;
+}
+
+.custom-v2-table .ant-table-thead .ant-table-cell:last-child {
+    border-start-end-radius: 0px !important;
+}

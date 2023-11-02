@@ -2,7 +2,7 @@
   "name": "@ianneo/ui-library",
   "license": "MIT",
   "private": false,
-  "version": "0.0.13",
+  "version": "0.0.35",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",

@@ -24,7 +24,7 @@ export const Select: React.FC<ISelectProps> = ({
                         .includes(input.toLocaleLowerCase()) || false
                 );
             }}
-            getPopupContainer={(trigger) => trigger.parentElement}
+            // getPopupContainer={(trigger) => trigger.parentElement}
             {...rest}
         >
             {children}

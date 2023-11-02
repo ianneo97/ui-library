@@ -1,161 +1,165 @@
 import { Button as AntdButton, ButtonProps } from "antd";
 import { ButtonGroupProps } from "antd/es/button";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ITooltipProps, Tooltip } from "../Tooltip";
 import { Text } from "../Typography";
 import { COLOURS } from "../constant";
+import React from "react";
+
+interface DynamicProps {
+  [key: string]: any;
+}
 
 export interface IButtonProps extends Omit<ButtonProps, "onClick"> {
-    onClick?: () => any | Promise<any>;
-    btntype?: "Submit" | "Close" | "Delete" | "Edit" | "Default";
+  onClick?: (e?: any) => any | Promise<any>;
+  btntype?: "Submit" | "Close" | "Delete" | "Edit" | "Default";
 }
 
 export interface IButtonGroupProps extends ButtonGroupProps {}
 
 export interface IButtonWithTooltipProps
-    extends IButtonProps,
-        Omit<ITooltipProps, "color" | "title"> {
-    tooltipTitle: string;
-    tooltipColor?: string;
+  extends IButtonProps,
+    Omit<ITooltipProps, "color" | "title"> {
+  tooltipTitle: string;
+  tooltipColor?: string;
 }
 
 export const ButtonTypes = (
-    hovering: boolean,
-    hidden?: boolean,
-    disabled?: boolean
+  hovering: boolean,
+  hidden?: boolean,
+  disabled?: boolean
 ): Record<string, React.CSSProperties> => ({
-    Submit: {
-        background: COLOURS.BRAND.PrimaryDark,
-        color: COLOURS.TEXT.White,
-        borderColor: COLOURS.BRAND.PrimaryDark,
-        borderRadius: "46px",
-        transform: hovering ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-        display: hidden ? "none" : "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: disabled ? 0.7 : 1,
-    },
-    Close: {
-        background: COLOURS.TEXT.White,
-        color: COLOURS.BRAND.PrimaryDark,
-        borderColor: COLOURS.BRAND.PrimaryDark,
-        borderRadius: "46px",
-        transform: hovering ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-        display: hidden ? "none" : "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: disabled ? 0.7 : 1,
-    },
-    Edit: {
-        background: COLOURS.TEXT.Blue,
-        color: COLOURS.TEXT.White,
-        borderColor: COLOURS.TEXT.Blue,
-        borderRadius: "46px",
-        transform: hovering ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-        display: hidden ? "none" : "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: disabled ? 0.7 : 1,
-    },
-    Delete: {
-        background: COLOURS.TEXT.White,
-        color: COLOURS.TEXT.Red,
-        borderColor: COLOURS.TEXT.Red,
-        borderRadius: "46px",
-        transform: hovering ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-        display: hidden ? "none" : "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: disabled ? 0.7 : 1,
-    },
-    Default: {
-        background: COLOURS.BRAND.Secondary,
-        color: COLOURS.TEXT.White,
-        borderColor: COLOURS.BRAND.Secondary,
-        borderRadius: "46px",
-        transform: hovering ? "scale(1.05)" : "scale(1)",
-        transition: "all 0.3s ease",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        opacity: disabled ? 0.7 : 1,
-    },
+  Submit: {
+    background: COLOURS.BRAND.PrimaryDark,
+    color: COLOURS.TEXT.White,
+    borderColor: COLOURS.BRAND.PrimaryDark,
+    borderRadius: "46px",
+    // transform: hovering ? "scale(1.05)" : "scale(1)",
+    transition: "all 0.3s ease",
+    display: hidden ? "none" : "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: disabled ? 0.7 : 1,
+  },
+  Close: {
+    background: COLOURS.TEXT.White,
+    color: COLOURS.BRAND.PrimaryDark,
+    borderColor: COLOURS.BRAND.PrimaryDark,
+    borderRadius: "46px",
+    // transform: hovering ? "scale(1.05)" : "scale(1)",
+    transition: "all 0.3s ease",
+    display: hidden ? "none" : "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: disabled ? 0.7 : 1,
+  },
+  Edit: {
+    background: COLOURS.TEXT.Blue,
+    color: COLOURS.TEXT.White,
+    borderColor: COLOURS.TEXT.Blue,
+    borderRadius: "46px",
+    // transform: hovering ? "scale(1.05)" : "scale(1)",
+    transition: "all 0.3s ease",
+    display: hidden ? "none" : "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: disabled ? 0.7 : 1,
+  },
+  Delete: {
+    background: COLOURS.TEXT.White,
+    color: COLOURS.TEXT.Red,
+    borderColor: COLOURS.TEXT.Red,
+    borderRadius: "46px",
+    // transform: hovering ? "scale(1.05)" : "scale(1)",
+    transition: "all 0.3s ease",
+    display: hidden ? "none" : "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: disabled ? 0.7 : 1,
+  },
+  Default: {
+    background: COLOURS.BRAND.Secondary,
+    color: COLOURS.TEXT.White,
+    borderColor: COLOURS.BRAND.Secondary,
+    borderRadius: "46px",
+    // transform: hovering ? "scale(1.2)" : "scale(1)",
+    transition: "all 0.3s ease",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    opacity: disabled ? 0.7 : 1,
+  },
 });
 
 export const Button: React.FC<IButtonProps> = ({
-    children,
-    hidden,
-    disabled,
-    onClick,
-    ...rest
+  children,
+  hidden,
+  disabled,
+  onClick,
+  style,
+  ...rest
 }) => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [isHover, setIsHover] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isHover, setIsHover] = useState(false);
 
-    const handleClick = async () => {
-        try {
-            setIsLoading(true);
-            if (onClick) {
-                const response = await onClick();
+  const handleClick = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      if (onClick) {
+        const response = await onClick();
 
-                return response;
-            }
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsLoading(false);
+        return response;
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onClick]);
+
+  return (
+    <AntdButton
+      onClick={handleClick}
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
+      style={{
+        ...ButtonTypes(isHover, hidden, disabled)[rest.btntype || "Default"],
+        ...style,
+      }}
+      loading={isLoading}
+      disabled={disabled}
+      {...rest}
+    >
+      <Text
+        color={
+          ButtonTypes(isHover, hidden)[rest.btntype || "Default"]?.color || ""
         }
-    };
-
-    return (
-        <AntdButton
-            onClick={handleClick}
-            onMouseEnter={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
-            style={
-                ButtonTypes(isHover, hidden, disabled)[
-                    rest.btntype || "Default"
-                ]
-            }
-            loading={isLoading}
-            disabled={disabled}
-            {...rest}
-        >
-            <Text
-                color={
-                    ButtonTypes(isHover, hidden)[rest.btntype || "Default"]
-                        ?.color || ""
-                }
-            >
-                {children}
-            </Text>
-        </AntdButton>
-    );
+      >
+        {children}
+      </Text>
+    </AntdButton>
+  );
 };
 
 export const ButtonGroup: React.FC<ButtonGroupProps> = ({
-    children,
-    ...rest
+  children,
+  ...rest
 }) => {
-    return <AntdButton.Group {...rest}>{children}</AntdButton.Group>;
+  return <AntdButton.Group {...rest}>{children}</AntdButton.Group>;
 };
 
 export const TooltipButton: React.FC<IButtonWithTooltipProps> = ({
-    tooltipTitle,
-    tooltipColor,
-    children,
-    onClick,
-    ...rest
+  tooltipTitle,
+  tooltipColor,
+  children,
+  onClick,
+  ...rest
 }) => {
-    return (
-        <Tooltip {...rest} title={tooltipTitle} color={tooltipColor}>
-            <Button {...rest} onClick={onClick}>
-                {children}
-            </Button>
-        </Tooltip>
-    );
+  return (
+    <Tooltip {...rest} title={tooltipTitle} color={tooltipColor}>
+      <Button {...rest} onClick={onClick}>
+        {children}
+      </Button>
+    </Tooltip>
+  );
 };
